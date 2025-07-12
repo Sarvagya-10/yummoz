@@ -1,7 +1,10 @@
 {
-  "Chicken Momo": 120.0,
   "Veg Momo": 80.0,
   "Buff Momo": 100.0,
   "Paneer Momo": 90.0,
-  "noodles": 70.0
+  "noodles": 70.0,
+  "Chicken Momo": {
+    "price": 120.0,
+    "image": "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a1/Momo_nepal.jpg/960px-Momo_nepal.jpg"
+  }
 }
