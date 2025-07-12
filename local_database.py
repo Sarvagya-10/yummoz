@@ -82,23 +82,27 @@ def delete_order(order_id: str) -> bool:
         return False
 
 # Menu operations
-def save_menu_item(item_name: str, price: float) -> bool:
+def save_menu_item(item_name: str, price: float, image_url: str = None) -> bool:
     """Save menu item to local JSON database"""
     try:
         menu = load_json_file(MENU_FILE, {})
-        menu[item_name] = price
+        if image_url is None:
+            # Generate a placeholder image URL if none provided
+            image_url = f"https://via.placeholder.com/200x150/FF6B6B/FFFFFF?text={item_name.replace(' ', '%20')}"
+        
+        menu[item_name] = {"price": price, "image": image_url}
         return save_json_file(MENU_FILE, menu)
     except Exception as e:
         st.error(f"Error saving menu item: {str(e)}")
         return False
 
-def get_menu() -> Dict[str, float]:
+def get_menu() -> Dict[str, Dict]:
     """Get menu items from local JSON database"""
     default_menu = {
-        "Chicken Momo": 120.0,
-        "Veg Momo": 80.0,
-        "Buff Momo": 100.0,
-        "Paneer Momo": 90.0
+        "Chicken Momo": {"price": 120.0, "image": "https://via.placeholder.com/200x150/FF6B6B/FFFFFF?text=Chicken%20Momo"},
+        "Veg Momo": {"price": 80.0, "image": "https://via.placeholder.com/200x150/4ECDC4/FFFFFF?text=Veg%20Momo"},
+        "Buff Momo": {"price": 100.0, "image": "https://via.placeholder.com/200x150/45B7D1/FFFFFF?text=Buff%20Momo"},
+        "Paneer Momo": {"price": 90.0, "image": "https://via.placeholder.com/200x150/F7DC6F/FFFFFF?text=Paneer%20Momo"}
     }
     return load_json_file(MENU_FILE, default_menu)
 
