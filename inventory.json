@@ -1,0 +1,22 @@
+{
+  "Chicken": {
+    "available": true,
+    "quantity": 100
+  },
+  "Vegetables": {
+    "available": true,
+    "quantity": 50
+  },
+  "Flour": {
+    "available": true,
+    "quantity": 20
+  },
+  "Spices": {
+    "available": true,
+    "quantity": 10
+  },
+  "Oil": {
+    "available": true,
+    "quantity": 5
+  }
+}

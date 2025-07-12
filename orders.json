@@ -1,0 +1,23 @@
+{
+  "653d60c8-4195-4d6c-8b8d-736bb3bad036": {
+    "customer_name": "Vansh",
+    "items": [
+      {
+        "momo_type": "Veg Momo",
+        "quantity": 1,
+        "price": 80.0,
+        "total": 80.0
+      },
+      {
+        "momo_type": "noodles",
+        "quantity": 2,
+        "price": 70.0,
+        "total": 140.0
+      }
+    ],
+    "special_instructions": "extra mayo",
+    "total_amount": 220.0,
+    "timestamp": "2025-07-12T12:58:24.272137",
+    "status": "pending"
+  }
+}
