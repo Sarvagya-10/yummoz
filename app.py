@@ -88,29 +88,71 @@ def customer_order_page():
     
     st.divider()
     
-    # Add items to cart section
-    st.subheader("🛒 Add Items to Cart")
+    # Menu items as tiles
+    st.subheader("🍽️ Menu")
     
-    col1, col2, col3 = st.columns([2, 1, 1])
-    with col1:
-        selected_momo = st.selectbox("Select Momo Type", list(menu_items.keys()))
-    with col2:
-        quantity = st.number_input("Quantity", min_value=1, max_value=50, value=1)
-    with col3:
-        price = menu_items[selected_momo]
-        st.write(f"Price: ${price:.2f}")
+    # Display menu items in a grid layout
+    cols = st.columns(3)  # 3 items per row
     
-    if st.button("➕ Add to Cart"):
-        # Add item to cart
-        cart_item = {
-            "momo_type": selected_momo,
-            "quantity": quantity,
-            "price": price,
-            "total": price * quantity
-        }
-        st.session_state.cart.append(cart_item)
-        st.success(f"Added {quantity}x {selected_momo} to cart!")
-        st.rerun()
+    for idx, (item_name, item_data) in enumerate(menu_items.items()):
+        with cols[idx % 3]:
+            # Create a container for each menu item
+            with st.container():
+                # Handle both old and new menu format
+                if isinstance(item_data, dict):
+                    price = item_data.get('price', 0)
+                    image_url = item_data.get('image', f"https://via.placeholder.com/200x150/FF6B6B/FFFFFF?text={item_name.replace(' ', '%20')}")
+                else:
+                    # Old format (just price)
+                    price = item_data
+                    image_url = f"https://via.placeholder.com/200x150/FF6B6B/FFFFFF?text={item_name.replace(' ', '%20')}"
+                
+                # Image
+                st.image(image_url, caption=item_name, use_container_width=True)
+                
+                # Item details
+                st.markdown(f"**{item_name}**")
+                st.markdown(f"Price: **${price:.2f}**")
+                
+                # Quantity controls
+                col1, col2, col3 = st.columns([1, 2, 1])
+                
+                # Initialize quantity in session state for this item
+                if f"qty_{item_name}" not in st.session_state:
+                    st.session_state[f"qty_{item_name}"] = 1
+                
+                with col1:
+                    if st.button("➖", key=f"dec_{item_name}"):
+                        if st.session_state[f"qty_{item_name}"] > 1:
+                            st.session_state[f"qty_{item_name}"] -= 1
+                            st.rerun()
+                
+                with col2:
+                    st.markdown(f"<div style='text-align: center; font-size: 18px; font-weight: bold;'>{st.session_state[f'qty_{item_name}']}</div>", 
+                               unsafe_allow_html=True)
+                
+                with col3:
+                    if st.button("➕", key=f"inc_{item_name}"):
+                        if st.session_state[f"qty_{item_name}"] < 50:
+                            st.session_state[f"qty_{item_name}"] += 1
+                            st.rerun()
+                
+                # Add to cart button
+                if st.button(f"🛒 Add to Cart", key=f"add_{item_name}", type="primary", use_container_width=True):
+                    quantity = st.session_state[f"qty_{item_name}"]
+                    cart_item = {
+                        "momo_type": item_name,
+                        "quantity": quantity,
+                        "price": price,
+                        "total": price * quantity
+                    }
+                    st.session_state.cart.append(cart_item)
+                    st.success(f"Added {quantity}x {item_name} to cart!")
+                    # Reset quantity to 1 after adding
+                    st.session_state[f"qty_{item_name}"] = 1
+                    st.rerun()
+                
+                st.divider()
     
     st.divider()
     
@@ -273,10 +315,20 @@ def admin_panel_page():
                 st.write("**Current Menu Items:**")
                 
                 # Create a more interactive table
-                for item_name, price in menu_items.items():
-                    col1, col2, col3, col4 = st.columns([3, 1, 1, 1])
+                for item_name, item_data in menu_items.items():
+                    # Handle both old and new menu format
+                    if isinstance(item_data, dict):
+                        price = item_data.get('price', 0)
+                        image_url = item_data.get('image', f"https://via.placeholder.com/200x150/FF6B6B/FFFFFF?text={item_name.replace(' ', '%20')}")
+                    else:
+                        # Old format (just price)
+                        price = item_data
+                        image_url = f"https://via.placeholder.com/200x150/FF6B6B/FFFFFF?text={item_name.replace(' ', '%20')}"
+                    
+                    col1, col2, col3, col4, col5 = st.columns([2, 1, 1, 1, 1])
                     
                     with col1:
+                        st.image(image_url, width=100)
                         st.write(f"**{item_name}**")
                     
                     with col2:
@@ -308,6 +360,7 @@ def admin_panel_page():
                             
                             with col1:
                                 new_name = st.text_input("New Name", value=item_name)
+                                new_image = st.text_input("Image URL", value=image_url)
                             
                             with col2:
                                 new_price = st.number_input("New Price", min_value=0.0, step=0.1, format="%.2f", value=price)
@@ -317,7 +370,7 @@ def admin_panel_page():
                                     try:
                                         # Delete old item and add new one
                                         delete_menu_item(item_name)
-                                        success = save_menu_item(new_name.strip(), new_price)
+                                        success = save_menu_item(new_name.strip(), new_price, new_image.strip())
                                         if success:
                                             st.success(f"Updated menu item!")
                                             st.session_state[f"editing_menu_{item_name}"] = False
@@ -344,6 +397,7 @@ def admin_panel_page():
             
             with col1:
                 item_name = st.text_input("Item Name", placeholder="e.g., Chicken Momo")
+                item_image = st.text_input("Image URL", placeholder="https://example.com/image.jpg (optional)")
             
             with col2:
                 item_price = st.number_input("Price", min_value=0.0, step=0.1, format="%.2f")
@@ -353,7 +407,7 @@ def admin_panel_page():
             if add_item:
                 if item_name.strip():
                     try:
-                        success = save_menu_item(item_name.strip(), item_price)
+                        success = save_menu_item(item_name.strip(), item_price, item_image.strip() if item_image.strip() else None)
                         if success:
                             st.success(f"Added {item_name} to menu!")
                             st.rerun()
